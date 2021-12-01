@@ -60,7 +60,7 @@ type JUnitFailure struct {
 
 // JUnitReportXML writes a JUnit xml representation of the given report to w
 // in the format described at http://windyroad.org/dl/Open%20Source/JUnit.xsd
-func JUnitReportXML(report *parser.Report, noXMLHeader bool, goVersion string, w io.Writer) error {
+func JUnitReportXML(report *parser.Report, noXMLHeader bool, goVersion string, ignoreTestMain bool, w io.Writer) error {
 	suites := JUnitTestSuites{}
 
 	// convert Report to JUnit test suites
@@ -90,6 +90,7 @@ func JUnitReportXML(report *parser.Report, noXMLHeader bool, goVersion string, w
 			ts.Properties = append(ts.Properties, JUnitProperty{"coverage.statements.pct", pkg.CoveragePct})
 		}
 
+		testMainReported := false
 		// individual test cases
 		for _, test := range pkg.Tests {
 			testCase := JUnitTestCase{
@@ -97,6 +98,10 @@ func JUnitReportXML(report *parser.Report, noXMLHeader bool, goVersion string, w
 				Name:      test.Name,
 				Time:      formatTime(test.Duration),
 				Failure:   nil,
+			}
+
+			if test.Name == "TestMain" {
+				testMainReported = true
 			}
 
 			if test.Result == parser.FAIL {
@@ -123,7 +128,20 @@ func JUnitReportXML(report *parser.Report, noXMLHeader bool, goVersion string, w
 				Time:      formatBenchmarkTime(benchmark.Duration),
 			}
 
+			if benchmark.Name == "TestMain" {
+				testMainReported = true
+			}
+
 			ts.TestCases = append(ts.TestCases, benchmarkCase)
+		}
+
+		if !testMainReported && !ignoreTestMain {
+			ts.TestCases = append(ts.TestCases, JUnitTestCase{
+				Classname: classname,
+				Name:      "TestMain",
+				Time:      "0.000",
+				Failure:   nil,
+			})
 		}
 
 		suites.Suites = append(suites.Suites, ts)
