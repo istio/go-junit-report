@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jstemmer/go-junit-report/formatter"
-	"github.com/jstemmer/go-junit-report/parser"
+	"github.com/istio/go-junit-report/formatter"
+	"github.com/istio/go-junit-report/parser"
 )
 
 var matchTest = flag.String("match", "", "only test testdata matching this pattern")
