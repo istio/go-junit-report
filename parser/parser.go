@@ -157,7 +157,7 @@ func Parse(r io.Reader, pkgName string) (*Report, error) {
 				// failed with some output. Create a dummy test with the
 				// output.
 				tests = append(tests, &Test{
-					Name:   "Failure",
+					Name:   "TestMain",
 					Result: FAIL,
 					Output: buffers[cur],
 				})

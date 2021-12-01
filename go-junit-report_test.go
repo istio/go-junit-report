@@ -24,6 +24,7 @@ type TestCase struct {
 	report      *parser.Report
 	noXMLHeader bool
 	packageName string
+	addTestMain bool
 }
 
 var testCases = []TestCase{
@@ -642,7 +643,7 @@ var testCases = []TestCase{
 					Time:     3,
 					Tests: []*parser.Test{
 						{
-							Name:   "Failure",
+							Name:   "TestMain",
 							Result: parser.FAIL,
 							Output: []string{
 								"panic: init",
@@ -657,7 +658,7 @@ var testCases = []TestCase{
 					Time:     3,
 					Tests: []*parser.Test{
 						{
-							Name:   "Failure",
+							Name:   "TestMain",
 							Result: parser.FAIL,
 							Output: []string{
 								"panic: init",
@@ -1524,11 +1525,71 @@ var testCases = []TestCase{
 							Output:   []string{},
 						},
 						{
-							Name:     "Failure",
+							Name:     "TestMain",
 							Duration: 0,
 							Time:     0,
 							Result:   parser.FAIL,
 							Output:   []string{"panic: panic"},
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		name:        "33-failed-summary.txt",
+		reportName:  "33-report.xml",
+		addTestMain: true,
+		report: &parser.Report{
+			Packages: []parser.Package{
+				{
+					Name:     "github.com/jstemmer/test/failedsummary",
+					Duration: 5 * time.Millisecond,
+					Time:     5,
+					Tests: []*parser.Test{
+						{
+							Name:     "TestOne",
+							Duration: 0,
+							Time:     0,
+							Result:   parser.PASS,
+							Output:   []string{},
+						},
+						{
+							Name:     "TestMain",
+							Duration: 0,
+							Time:     0,
+							Result:   parser.FAIL,
+							Output:   []string{"panic: panic"},
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		name:        "34-pass.txt",
+		reportName:  "34-report.xml",
+		addTestMain: true,
+		report: &parser.Report{
+			Packages: []parser.Package{
+				{
+					Name:     "package/name",
+					Duration: 160 * time.Millisecond,
+					Time:     160,
+					Tests: []*parser.Test{
+						{
+							Name:     "TestZ",
+							Duration: 60 * time.Millisecond,
+							Time:     60,
+							Result:   parser.PASS,
+							Output:   []string{},
+						},
+						{
+							Name:     "TestA",
+							Duration: 100 * time.Millisecond,
+							Time:     100,
+							Result:   parser.PASS,
+							Output:   []string{},
 						},
 					},
 				},
@@ -1664,7 +1725,7 @@ func testJUnitFormatter(t *testing.T, goVersion string) {
 
 		var junitReport bytes.Buffer
 
-		if err = formatter.JUnitReportXML(testCase.report, testCase.noXMLHeader, goVersion, &junitReport); err != nil {
+		if err = formatter.JUnitReportXML(testCase.report, testCase.noXMLHeader, goVersion, !testCase.addTestMain, &junitReport); err != nil {
 			t.Fatal(err)
 		}
 
